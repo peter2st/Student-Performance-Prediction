@@ -15,7 +15,6 @@ from sklearn import metrics
 df = pd.read_csv('C:/Users/scott/Desktop/Programming Stuff/Data_sets/StudentsPerformance.csv')
 
 df.rename(columns={"test preparation course": "prep", "math score": "math", "reading score": "reading", "writing score": "writing"}, inplace=True)
-df['avg'] = df.mean([['math', 'reading', 'writing']])
 
 
 df['gender'].replace('female', 1,inplace=True)
@@ -53,6 +52,10 @@ df['reading'] = df['reading'].apply(lambda x: ((x - min_reading)/(max_reading - 
 max_writing = max(df['writing'])
 min_writing = min(df['writing'])
 df['writing'] = df['writing'].apply(lambda x: ((x - min_writing)/(max_writing - min_writing)))
+df['avg'] = (df['math'] + df['reading'] + df['writing']) / 3
+
+if df['avg'] >= .60:
+    
 
 pd.set_option('display.max_columns', None)
 print(df.head())
@@ -64,7 +67,7 @@ y = df[['math']]
 x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
 lg.fit(x_train, y_train)
 
-math_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0]]) * 100
+math_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]]) * 100
 print('According to your information, I predict you will get a',math_predict,'% on your math test.')
 
 #Predict reading scores
@@ -72,7 +75,7 @@ x = df[['gender', 'lunch', 'prep', 'groupA', 'groupB', 'groupC', 'groupD', 'grou
 y = df[['reading']]
 x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
 lg.fit(x_train, y_train)
-reading_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0]]) * 100
+reading_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]]) * 100
 print('According to your information, I predict you will get a',reading_predict,'% on your reading test.')
 
 #Predict writing scores
@@ -80,9 +83,15 @@ x = df[['gender', 'lunch', 'prep', 'groupA', 'groupB', 'groupC', 'groupD', 'grou
 y = df[['writing']]
 x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
 lg.fit(x_train, y_train)
-writing_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0]]) * 100
+writing_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]]) * 100
 print('According to your information, I predict you will get a',writing_predict,'% on your writing test.')
 
+x = df[['gender', 'lunch', 'prep', 'groupA', 'groupB', 'groupC', 'groupD', 'groupE', 'bachelors', 'masters', 'associates', 'somecollege', 'highschool', 'somehigh']]
+y = df[['avg']]
+x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
+lg.fit(x_train, y_train)
+avg_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]]) * 100
+print('According to your information, I predict you will get a',avg_predict,'% on your writing test.')
 
 
 log = LogisticRegression()
