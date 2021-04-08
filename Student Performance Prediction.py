@@ -7,7 +7,8 @@ Created on Wed Mar 24 16:51:20 2021
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn import metrics
@@ -16,6 +17,26 @@ df = pd.read_csv('C:/Users/scott/Desktop/Programming Stuff/Data_sets/StudentsPer
 
 df.rename(columns={"test preparation course": "prep", "math score": "math", "reading score": "reading", "writing score": "writing"}, inplace=True)
 
+#plotting gender
+sns.set_style('whitegrid')
+sns.countplot(y='gender',data=df,palette='winter')
+plt.show()
+
+#plotting race
+sns.countplot(y='race/ethnicity', data=df, palette='winter')
+plt.show()
+
+#plotting whether or not the student completed the test prep
+sns.countplot(y='prep', data=df, palette='winter')
+plt.show()
+
+#plotting lunch
+sns.countplot(y='lunch', data=df, palette='winter')
+plt.show()
+
+#plotting the parental level of education
+sns.countplot(y='parental level of education', data=df, palette='winter')
+plt.show()
 
 df['gender'].replace('female', 1,inplace=True)
 df['gender'].replace('male', 0,inplace=True)
@@ -54,61 +75,80 @@ min_writing = min(df['writing'])
 df['writing'] = df['writing'].apply(lambda x: ((x - min_writing)/(max_writing - min_writing)))
 df['avg'] = (df['math'] + df['reading'] + df['writing']) / 3
 
-if df['avg'] >= .60:
-    
+df['pass'] = df['avg'].apply(lambda x: 1 if x >= .60 else 0)
 
 pd.set_option('display.max_columns', None)
 print(df.head())
 lg = LinearRegression()
-         
+
+features = ['gender', 'lunch', 'prep', 'groupA', 'groupB', 'groupC', 'groupD', 'groupE', 'bachelors', 'masters', 'associates', 'somecollege', 'highschool', 'somehigh']
+
 #Predict math scores
-x = df[['gender', 'lunch', 'prep', 'groupA', 'groupB', 'groupC', 'groupD', 'groupE', 'bachelors', 'masters', 'associates', 'somecollege', 'highschool', 'somehigh']]
+x = df[features]
 y = df[['math']]
 x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
 lg.fit(x_train, y_train)
-
 math_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]]) * 100
+math_predict = round(math_predict[0][0], 2)
 print('According to your information, I predict you will get a',math_predict,'% on your math test.')
 
 #Predict reading scores
-x = df[['gender', 'lunch', 'prep', 'groupA', 'groupB', 'groupC', 'groupD', 'groupE', 'bachelors', 'masters', 'associates', 'somecollege', 'highschool', 'somehigh']]
+x = df[features]
 y = df[['reading']]
 x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
 lg.fit(x_train, y_train)
 reading_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]]) * 100
+reading_predict = round(reading_predict[0][0], 2)
 print('According to your information, I predict you will get a',reading_predict,'% on your reading test.')
 
 #Predict writing scores
-x = df[['gender', 'lunch', 'prep', 'groupA', 'groupB', 'groupC', 'groupD', 'groupE', 'bachelors', 'masters', 'associates', 'somecollege', 'highschool', 'somehigh']]
+x = df[features]
 y = df[['writing']]
 x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
 lg.fit(x_train, y_train)
 writing_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]]) * 100
+writing_predict = round(writing_predict[0][0], 2)
 print('According to your information, I predict you will get a',writing_predict,'% on your writing test.')
 
-x = df[['gender', 'lunch', 'prep', 'groupA', 'groupB', 'groupC', 'groupD', 'groupE', 'bachelors', 'masters', 'associates', 'somecollege', 'highschool', 'somehigh']]
+#Predict average score
+x = df[features]
 y = df[['avg']]
 x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
 lg.fit(x_train, y_train)
 avg_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]]) * 100
-print('According to your information, I predict you will get a',avg_predict,'% on your writing test.')
+avg_predict = round(avg_predict[0][0], 2)
+print('According to your information, I predict you will get a',avg_predict,'% average.')
 
-
+#Predict pass or fail
 log = LogisticRegression()
+x = df[features]
+y = df[['pass']]
+x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
+log.fit(x_train, y_train.values.ravel())
 
+#Predict chance of pass or fail
+pass_predict = log.predict([[0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]])
+percent_pass = log.predict_proba([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]])
+pass_perc = round(percent_pass[0][1], 3) * 100
+fail_perc = round(percent_pass[0][0], 3) * 100
+print('According to your information, I predict that there is a',pass_perc,'% chance you will pass, and a',fail_perc,'% chance you will fail.')
 
+#Let's plot some graphs to display some of the stats of the students performances
 
+pass_count = 0
+fail_count = 0
+for i in df['pass']:
+    if i == 1:
+        pass_count += 1
+    else:
+        fail_count += 1
 
+plt.bar('Pass', pass_count)
+plt.bar('Fail', fail_count)
+plt.show()
 
-
-
-
-
-
-
-
-
-
+sns.countplot(y='pass', data=df, palette='winter')
+plt.show()
 
 
 
