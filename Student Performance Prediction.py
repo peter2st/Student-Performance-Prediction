@@ -11,11 +11,13 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn import tree
+from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 
 df = pd.read_csv('C:/Users/scott/Desktop/Programming Stuff/Data_sets/StudentsPerformance.csv')
 
-df.rename(columns={"test preparation course": "prep", "math score": "math", "reading score": "reading", "writing score": "writing"}, inplace=True)
+df.rename(columns={"test preparation course": "prep", "math score": "math", "reading score": "reading", "writing score": "writing", 'parental level of education': 'parental'}, inplace=True)
 
 #plotting gender
 sns.set_style('whitegrid')
@@ -35,7 +37,7 @@ sns.countplot(y='lunch', data=df, palette='winter')
 plt.show()
 
 #plotting the parental level of education
-sns.countplot(y='parental level of education', data=df, palette='winter')
+sns.countplot(y='parental', data=df, palette='winter')
 plt.show()
 
 df['gender'].replace('female', 1,inplace=True)
@@ -54,13 +56,19 @@ df['groupD'] = df['race/ethnicity'].apply(lambda x: 1 if x == 'group D' else 0)
 df['groupE'] = df['race/ethnicity'].apply(lambda x: 1 if x == 'group E' else 0)
 df = df.drop(['race/ethnicity'], 1)
 
-df['bachelors'] = df['parental level of education'].apply(lambda x: 1 if x == 'bachelor\'s degree' else 0)
-df['masters'] = df['parental level of education'].apply(lambda x: 1 if x == 'master\'s degree' else 0)
-df['associates'] = df['parental level of education'].apply(lambda x: 1 if x == 'associate\'s degree' else 0)
-df['somecollege'] = df['parental level of education'].apply(lambda x: 1 if x == 'some college' else 0)
-df['highschool'] = df['parental level of education'].apply(lambda x: 1 if x == 'high school' else 0)
-df['somehigh'] = df['parental level of education'].apply(lambda x: 1 if x == 'some high school' else 0)
-df = df.drop(['parental level of education'], 1)
+# df['bachelors'] = df['parental level of education'].apply(lambda x: 1 if x == 'bachelor\'s degree' else 0)
+# df['masters'] = df['parental level of education'].apply(lambda x: 1 if x == 'master\'s degree' else 0)
+# df['associates'] = df['parental level of education'].apply(lambda x: 1 if x == 'associate\'s degree' else 0)
+# df['somecollege'] = df['parental level of education'].apply(lambda x: 1 if x == 'some college' else 0)
+# df['highschool'] = df['parental level of education'].apply(lambda x: 1 if x == 'high school' else 0)
+# df['somehigh'] = df['parental level of education'].apply(lambda x: 1 if x == 'some high school' else 0)
+# df = df.drop(['parental level of education'], 1)
+
+df['parental'] = df['parental'].apply(lambda x: 0 if x == 'some high school' else
+                                      (1 if x == 'high school' else
+                                       (2 if x == 'some college' else
+                                        (3 if x == 'associate\'s degree' else
+                                         (4 if x == 'bachelor\'s degree' else 5)))))
 
 max_math = max(df['math'])
 min_math = min(df['math'])
@@ -81,14 +89,15 @@ pd.set_option('display.max_columns', None)
 print(df.head())
 lg = LinearRegression()
 
-features = ['gender', 'lunch', 'prep', 'groupA', 'groupB', 'groupC', 'groupD', 'groupE', 'bachelors', 'masters', 'associates', 'somecollege', 'highschool', 'somehigh']
+features = ['gender', 'lunch', 'prep', 'groupA', 'groupB', 'groupC', 'groupD', 'groupE', 'parental']
+print(df.head())
 
 #Predict math scores
 x = df[features]
 y = df[['math']]
 x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
 lg.fit(x_train, y_train)
-math_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]]) * 100
+math_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]]) * 100
 math_predict = round(math_predict[0][0], 2)
 print('According to your information, I predict you will get a',math_predict,'% on your math test.')
 
@@ -97,7 +106,7 @@ x = df[features]
 y = df[['reading']]
 x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
 lg.fit(x_train, y_train)
-reading_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]]) * 100
+reading_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]]) * 100
 reading_predict = round(reading_predict[0][0], 2)
 print('According to your information, I predict you will get a',reading_predict,'% on your reading test.')
 
@@ -106,7 +115,7 @@ x = df[features]
 y = df[['writing']]
 x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
 lg.fit(x_train, y_train)
-writing_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]]) * 100
+writing_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]]) * 100
 writing_predict = round(writing_predict[0][0], 2)
 print('According to your information, I predict you will get a',writing_predict,'% on your writing test.')
 
@@ -115,7 +124,7 @@ x = df[features]
 y = df[['avg']]
 x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
 lg.fit(x_train, y_train)
-avg_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]]) * 100
+avg_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]]) * 100
 avg_predict = round(avg_predict[0][0], 2)
 print('According to your information, I predict you will get a',avg_predict,'% average.')
 
@@ -127,12 +136,12 @@ x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_si
 log.fit(x_train, y_train.values.ravel())
 
 #Predict chance of pass or fail
-pass_predict = log.predict([[0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]])
-percent_pass = log.predict_proba([[1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]])
+pass_predict = log.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]])
+percent_pass = log.predict_proba([[1, 1, 0, 0, 1, 0, 0, 0, 5]])
 pass_perc = round(percent_pass[0][1], 3) * 100
 fail_perc = round(percent_pass[0][0], 3) * 100
 print('According to your information, I predict that there is a',pass_perc,'% chance you will pass, and a',fail_perc,'% chance you will fail.')
-
+print(pass_predict)
 #Let's plot some graphs to display some of the stats of the students performances
 
 pass_count = 0
@@ -150,6 +159,8 @@ plt.show()
 sns.countplot(y='pass', data=df, palette='winter')
 plt.show()
 
+print(lg.score(x_test, y_test))
+print(log.score(x_test, y_test))
 
 
 
