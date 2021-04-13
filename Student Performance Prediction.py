@@ -17,7 +17,7 @@ from sklearn import metrics
 
 df = pd.read_csv('C:/Users/scott/Desktop/Programming Stuff/Data_sets/StudentsPerformance.csv')
 
-df.rename(columns={"test preparation course": "prep", "math score": "math", "reading score": "reading", "writing score": "writing", 'parental level of education': 'parental'}, inplace=True)
+df.rename(columns={"test preparation course": "prep", "math score": "math", "reading score": "reading", "writing score": "writing", 'parental level of education': 'parental', 'race/ethnicity': 'race'}, inplace=True)
 
 #plotting gender
 sns.set_style('whitegrid')
@@ -25,7 +25,7 @@ sns.countplot(y='gender',data=df,palette='winter')
 plt.show()
 
 #plotting race
-sns.countplot(y='race/ethnicity', data=df, palette='winter')
+sns.countplot(y='race', data=df, palette='winter')
 plt.show()
 
 #plotting whether or not the student completed the test prep
@@ -49,20 +49,14 @@ df['lunch'].replace('free/reduced', 0,inplace=True)
 df['prep'].replace('completed', 1,inplace=True)
 df['prep'].replace('none', 0,inplace=True)
 
-df['groupA'] = df['race/ethnicity'].apply(lambda x: 1 if x == 'group A' else 0)
-df['groupB'] = df['race/ethnicity'].apply(lambda x: 1 if x == 'group B' else 0)
-df['groupC'] = df['race/ethnicity'].apply(lambda x: 1 if x == 'group C' else 0)
-df['groupD'] = df['race/ethnicity'].apply(lambda x: 1 if x == 'group D' else 0)
-df['groupE'] = df['race/ethnicity'].apply(lambda x: 1 if x == 'group E' else 0)
-df = df.drop(['race/ethnicity'], 1)
+print(df.race.unique())
 
-# df['bachelors'] = df['parental level of education'].apply(lambda x: 1 if x == 'bachelor\'s degree' else 0)
-# df['masters'] = df['parental level of education'].apply(lambda x: 1 if x == 'master\'s degree' else 0)
-# df['associates'] = df['parental level of education'].apply(lambda x: 1 if x == 'associate\'s degree' else 0)
-# df['somecollege'] = df['parental level of education'].apply(lambda x: 1 if x == 'some college' else 0)
-# df['highschool'] = df['parental level of education'].apply(lambda x: 1 if x == 'high school' else 0)
-# df['somehigh'] = df['parental level of education'].apply(lambda x: 1 if x == 'some high school' else 0)
-# df = df.drop(['parental level of education'], 1)
+df['groupA'] = df['race'].apply(lambda x: 1 if x == 'group A' else 0)
+df['groupB'] = df['race'].apply(lambda x: 1 if x == 'group B' else 0)
+df['groupC'] = df['race'].apply(lambda x: 1 if x == 'group C' else 0)
+df['groupD'] = df['race'].apply(lambda x: 1 if x == 'group D' else 0)
+df['groupE'] = df['race'].apply(lambda x: 1 if x == 'group E' else 0)
+df = df.drop(['race'], 1)
 
 df['parental'] = df['parental'].apply(lambda x: 0 if x == 'some high school' else
                                       (1 if x == 'high school' else
@@ -89,44 +83,49 @@ pd.set_option('display.max_columns', None)
 print(df.head())
 lg = LinearRegression()
 
-features = ['gender', 'lunch', 'prep', 'groupA', 'groupB', 'groupC', 'groupD', 'groupE', 'parental']
+#features = ['gender', 'lunch', 'prep', 'groupA', 'groupB', 'groupC', 'groupD', 'groupE', 'parental']
+features = ['gender', 'lunch', 'prep']
 print(df.head())
 
-#Predict math scores
-x = df[features]
-y = df[['math']]
-x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
-lg.fit(x_train, y_train)
-math_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]]) * 100
-math_predict = round(math_predict[0][0], 2)
-print('According to your information, I predict you will get a',math_predict,'% on your math test.')
+# #Predict math scores
+# x = df[features]
+# y = df[['math']]
+# x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
+# lg.fit(x_train, y_train)
+# #math_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]]) * 100
+# math_predict = lg.predict([[1, 1, 0]]) * 100
+# math_predict = round(math_predict[0][0], 2)
+# print('According to your information, I predict you will get a',math_predict,'% on your math test.')
 
-#Predict reading scores
-x = df[features]
-y = df[['reading']]
-x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
-lg.fit(x_train, y_train)
-reading_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]]) * 100
-reading_predict = round(reading_predict[0][0], 2)
-print('According to your information, I predict you will get a',reading_predict,'% on your reading test.')
+# #Predict reading scores
+# x = df[features]
+# y = df[['reading']]
+# x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
+# lg.fit(x_train, y_train)
+# #reading_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]]) * 100
+# reading_predict = lg.predict([[1, 1, 0]]) * 100
+# reading_predict = round(reading_predict[0][0], 2)
+# print('According to your information, I predict you will get a',reading_predict,'% on your reading test.')
 
-#Predict writing scores
-x = df[features]
-y = df[['writing']]
-x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
-lg.fit(x_train, y_train)
-writing_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]]) * 100
-writing_predict = round(writing_predict[0][0], 2)
-print('According to your information, I predict you will get a',writing_predict,'% on your writing test.')
+# #Predict writing scores
+# x = df[features]
+# y = df[['writing']]
+# x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
+# lg.fit(x_train, y_train)
+# #writing_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]]) * 100
+# writing_predict = lg.predict([[1, 1, 0]]) * 100
+# writing_predict = round(writing_predict[0][0], 2)
+# print('According to your information, I predict you will get a',writing_predict,'% on your writing test.')
 
-#Predict average score
-x = df[features]
-y = df[['avg']]
-x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
-lg.fit(x_train, y_train)
-avg_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]]) * 100
-avg_predict = round(avg_predict[0][0], 2)
-print('According to your information, I predict you will get a',avg_predict,'% average.')
+# #Predict average score
+# x = df[features]
+# y = df[['avg']]
+# x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_size=.2, random_state=100)
+# lg.fit(x_train, y_train)
+# #avg_predict = lg.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]]) * 100
+# avg_predict = lg.predict([[1, 1, 0]]) * 100
+# avg_predict = round(avg_predict[0][0], 2)
+# print('According to your information, I predict you will get a',avg_predict,'% average.')
 
 #Predict pass or fail
 log = LogisticRegression()
@@ -136,12 +135,14 @@ x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=.8, test_si
 log.fit(x_train, y_train.values.ravel())
 
 #Predict chance of pass or fail
-pass_predict = log.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]])
-percent_pass = log.predict_proba([[1, 1, 0, 0, 1, 0, 0, 0, 5]])
-pass_perc = round(percent_pass[0][1], 3) * 100
-fail_perc = round(percent_pass[0][0], 3) * 100
-print('According to your information, I predict that there is a',pass_perc,'% chance you will pass, and a',fail_perc,'% chance you will fail.')
-print(pass_predict)
+#pass_predict = log.predict([[1, 1, 0, 0, 1, 0, 0, 0, 5]])
+#percent_pass = log.predict_proba([[1, 1, 0, 0, 1, 0, 0, 0, 5]])
+# pass_predict = log.predict([[1, 1, 0]])
+# percent_pass = log.predict_proba([[1, 1, 0]])
+# pass_perc = round(percent_pass[0][1], 3) * 100
+# fail_perc = round(percent_pass[0][0], 3) * 100
+# print('According to your information, I predict that there is a',pass_perc,'% chance you will pass, and a',fail_perc,'% chance you will fail.')
+# print(pass_predict)
 #Let's plot some graphs to display some of the stats of the students performances
 
 pass_count = 0
@@ -159,12 +160,18 @@ plt.show()
 sns.countplot(y='pass', data=df, palette='winter')
 plt.show()
 
+lg.fit(x_train, y_train)
+
 print(lg.score(x_test, y_test))
 print(log.score(x_test, y_test))
 
 
+x_train, x_test, y_train, y_test = train_test_split(x, np.ravel(y), train_size = 0.8, test_size = 0.2, random_state = 100)
+forest = RandomForestClassifier(n_estimators = 2)
+forest.fit(x_train, y_train)
+score = forest.score(x_test, y_test)
+print(score)
+print(lg.coef_)
+print(log.coef_)
 
-
-
-
-
+print(forest.predict([[0, 0, 1]]))
